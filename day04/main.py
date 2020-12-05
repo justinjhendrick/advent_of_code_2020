@@ -113,6 +113,8 @@ def main(args):
     print(f'part one: {p1_ans}')
     p2_ans = validate_p2(passports)
     print(f'part two: {p2_ans}')
+    # part one: 208
+    # part two: 167
 
 
 if __name__ == '__main__':
