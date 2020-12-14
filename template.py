@@ -15,11 +15,11 @@ def parse_file(filename):
     return [parse(line) for line in stripped_lines(filename)]
 
 
-def p1(values):
+def p1(inputs):
     pass
 
 
-def p2(values):
+def p2(inputs):
     pass
 
 
