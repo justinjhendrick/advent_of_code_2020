@@ -1,9 +1,6 @@
 import sys
 from collections import defaultdict
 import re
-import pyparsing as pp
-from functools import reduce
-import operator
 
 
 def stripped_lines(filename):
@@ -43,11 +40,12 @@ def build_regex(rules, key, part_num):
         return groups[0]
 
     if part_num == 2 and (key == 8 or key == 11):
+        r42 = build_regex(rules, 42, part_num)
+        r31 = build_regex(rules, 31, part_num)
         if key == 8:
-            return '(' + build_regex(rules, 42, part_num) + '+)'
+            return '(' + r42 + '+)'
         elif key == 11:
-            return '(?P<left>' + build_regex(rules, 42, part_num) + '+)' + \
-                   '(?P<right>' + build_regex(rules, 31, part_num) + '+)'
+            return '(' + '|'.join([r42 + '{' + str(i) + '}' + r31 + '{' + str(i) + '}' for i in range(1, 5)]) + ')'
 
     result = []
     for group in groups:
@@ -58,30 +56,9 @@ def build_regex(rules, key, part_num):
     return pre + '|'.join(result) + post
 
 
-# def build_grammar(rules, key):
-#    groups = rules[key]
-#    if isinstance(groups[0], str):
-#        return pp.Literal(groups[0])
-#    # elif key == 8:
-#    #    result = pp.OneOrMore(build_grammar(rules, 42))
-#    #    #result.setName('8')
-#    #    return result
-#    # elif key == 11:
-#    #    result = pp.OneOrMore(build_grammar(rules, 42)) + pp.OneOrMore(build_grammar(rules, 31))
-#    #    #result.setName('11')
-#    #    return result
-#    else:
-#        options = []
-#        for group in groups:
-#            group_regex = reduce(lambda x, y: x + y,
-#                                 (build_grammar(rules, key) for key in group))
-#            options.append(group_regex)
-#        return reduce(lambda x, y: x | y, options)
-
-
-def p1(inputs):
+def run(inputs, part_num):
     rules, messages = inputs
-    rx_str = build_regex(rules, 0, 1)
+    rx_str = build_regex(rules, 0, part_num)
     rx = re.compile(rx_str)
     num_valid = 0
     for m in messages:
@@ -91,50 +68,14 @@ def p1(inputs):
     return num_valid
 
 
-def p2(inputs):
-    rules, messages = inputs
-    rx_str = build_regex(rules, 0, 2)
-    rx = re.compile(rx_str)
-    num_valid = 0
-    for m in messages:
-        matches = rx.match(m)
-        if matches is not None:
-            num_left_matches = len(re.findall(build_regex(rules, 42, 2), matches.group('left')))
-            num_right_matches = len(re.findall(build_regex(rules, 31, 2), matches.group('right')))
-            print(m, num_left_matches, num_right_matches)
-            if num_left_matches == num_right_matches:
-                num_valid += 1
-    return num_valid
-
-
-# def grammar_match(g, m):
-#    try:
-#        result = g.parseString(m)
-#        #eight = result.getName('8')
-#        #eleven = result.getName('11')
-#        return True
-#    except pp.ParseException:
-#        return False
-#
-#
-# def p2(inputs):
-#    rules, messages = inputs
-#    grammar = build_grammar(rules, 0)
-#    print(grammar)
-#    num_valid = 0
-#    for m in messages:
-#        match = grammar_match(grammar, m)
-#        if match:
-#            num_valid += 1
-#    return num_valid
-
-
 def main(args):
     inputs = parse_file(args[1])
-    p1_ans = p1(inputs)
+    p1_ans = run(inputs, 1)
     print(f'part one: {p1_ans}')
-    p2_ans = p2(inputs)
+    p2_ans = run(inputs, 2)
     print(f'part two: {p2_ans}')
+    # part one: 132
+    # part two: 306
 
 
 if __name__ == '__main__':
